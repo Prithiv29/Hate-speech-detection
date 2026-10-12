@@ -1,0 +1,1 @@
+{"model_id": "ai4bharat/IndicBERTv2-MLM-only", "head": "mean-pool + MLP(hidden-256-2)", "max_len": 128, "half": false}

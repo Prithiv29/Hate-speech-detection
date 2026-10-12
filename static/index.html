@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hate Speech Detector · Tamil</title>
+<style>
+  :root{
+    --navy:#0b2a5b; --blue:#1e4fa8; --mid:#9dbbe8; --tint:#eaf1fb; --line:#d5e1f3;
+    --ink:#1b2a41; --muted:#5b6b84; --bg:#f6f9fe; --white:#fff;
+    --bad:#b3261e; --bad-bg:#fdecea; --ok:#1b7f4b; --ok-bg:#e7f6ee;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font-family:"Segoe UI","Nirmala UI","Latha","Noto Sans Tamil",system-ui,-apple-system,sans-serif;line-height:1.5}
+  header{background:var(--navy);color:#fff;padding:22px 20px}
+  .wrap{max-width:860px;margin:0 auto}
+  header .wrap{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+  h1{margin:0;font-size:1.5rem;font-family:Cambria,Georgia,serif}
+  header p{margin:2px 0 0;color:#cfe0f8;font-size:.95rem}
+  .status{font-size:.82rem;background:rgba(255,255,255,.12);padding:6px 12px;border-radius:999px;white-space:nowrap}
+  .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#f5b942;margin-right:7px}
+  .dot.on{background:#4cd08a}
+  main{padding:22px 20px 40px}
+  .card{background:var(--white);border:1px solid var(--line);border-radius:12px;padding:20px;margin-bottom:18px}
+  label.big{font-weight:600;color:var(--navy);display:block;margin-bottom:8px}
+  textarea{width:100%;min-height:120px;resize:vertical;padding:12px 14px;font:inherit;font-size:1.05rem;
+           border:1px solid var(--mid);border-radius:8px;color:var(--ink)}
+  textarea:focus,button:focus-visible,input[type=range]:focus-visible{outline:3px solid #b9d0f5;outline-offset:1px}
+  .row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:10px}
+  .count{font-size:.82rem;color:var(--muted)}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .chips span{font-size:.82rem;color:var(--muted);align-self:center}
+  .chip{background:var(--tint);border:1px solid var(--line);color:var(--blue);padding:5px 11px;border-radius:999px;
+        font-size:.85rem;cursor:pointer}
+  .chip:hover{background:#dde9fa}
+  .controls{display:flex;gap:22px;align-items:center;flex-wrap:wrap;margin-top:16px}
+  .slider{flex:1;min-width:220px}
+  .slider label{font-size:.88rem;color:var(--muted);display:flex;justify-content:space-between}
+  input[type=range]{width:100%;accent-color:var(--blue)}
+  button.primary{background:var(--blue);color:#fff;border:0;padding:11px 26px;border-radius:8px;font-size:1rem;
+                 font-weight:600;cursor:pointer}
+  button.primary:hover{background:#17408b}
+  button.primary:disabled{background:var(--mid);cursor:wait}
+  #result{display:none}
+  .verdict{display:inline-block;font-weight:700;font-size:1.2rem;padding:6px 18px;border-radius:999px;letter-spacing:.3px}
+  .verdict.hate{background:var(--bad-bg);color:var(--bad)}
+  .verdict.nothate{background:var(--ok-bg);color:var(--ok)}
+  .bar{position:relative;height:16px;background:var(--tint);border-radius:8px;margin:18px 0 6px;border:1px solid var(--line)}
+  .fill{height:100%;border-radius:8px;background:linear-gradient(90deg,var(--mid),var(--blue));width:0;transition:width .35s}
+  .mark{position:absolute;top:-5px;width:2px;height:24px;background:var(--navy)}
+  .scale{display:flex;justify-content:space-between;font-size:.78rem;color:var(--muted)}
+  .nums{display:flex;gap:28px;margin-top:14px;flex-wrap:wrap}
+  .nums div b{display:block;font-size:1.5rem;color:var(--navy);font-family:Cambria,Georgia,serif}
+  .nums div span{font-size:.82rem;color:var(--muted)}
+  .cleaned{margin-top:14px;font-size:.85rem;color:var(--muted)}
+  .cleaned code{display:block;background:var(--tint);padding:8px 10px;border-radius:6px;margin-top:4px;color:var(--ink);
+                white-space:pre-wrap;word-break:break-word;font-family:inherit}
+  .demo-note{background:#fff7e0;border:1px solid #f3dc9b;color:#7a5a00;padding:8px 12px;border-radius:8px;font-size:.85rem;margin-top:14px}
+  .error{display:none;background:var(--bad-bg);color:var(--bad);border:1px solid #f3bcb7;padding:10px 14px;border-radius:8px;margin-top:14px;font-size:.92rem}
+  h2{margin:0 0 10px;font-size:1.05rem;color:var(--navy)}
+  #history{list-style:none;margin:0;padding:0}
+  #history li{display:flex;gap:10px;align-items:center;padding:8px 6px;border-top:1px solid var(--line);cursor:pointer}
+  #history li:first-child{border-top:0}
+  #history li:hover{background:var(--tint)}
+  .tag{font-size:.72rem;font-weight:700;padding:2px 9px;border-radius:999px;white-space:nowrap}
+  .tag.hate{background:var(--bad-bg);color:var(--bad)} .tag.nothate{background:var(--ok-bg);color:var(--ok)}
+  .snip{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.92rem}
+  .pct{font-size:.82rem;color:var(--muted)}
+  .empty{color:var(--muted);font-size:.9rem}
+  footer{color:var(--muted);font-size:.82rem;text-align:center;padding:0 20px 30px}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div>
+    <h1>Caste &amp; Migration Hate Speech Detector</h1>
+    <p>Tamil, Tanglish and English comments · IndicBERTv2 classifier</p>
+  </div>
+  <div class="status" id="status"><span class="dot" id="dot"></span><span id="statusText">Connecting…</span></div>
+</div></header>
+
+<main><div class="wrap">
+  <section class="card">
+    <label class="big" for="text">Enter a comment</label>
+    <textarea id="text" maxlength="2000" placeholder="Type or paste a comment in Tamil, Tanglish or English…"></textarea>
+    <div class="row">
+      <span class="count"><span id="count">0</span> / 2000 · press Ctrl+Enter to check</span>
+    </div>
+    <div class="chips"><span>Try:</span>
+      <button class="chip" type="button" data-t="avanga romba nalla velai pannanga">Tanglish</button>
+      <button class="chip" type="button" data-t="இந்த வீடியோ ரொம்ப நல்லா இருக்கு">Tamil script</button>
+      <button class="chip" type="button" data-t="This is a good discussion about migration policy">English</button>
+    </div>
+    <div class="controls">
+      <div class="slider">
+        <label for="thr"><span>Decision threshold (P(hate) needed to flag)</span><b id="thrVal">0.50</b></label>
+        <input id="thr" type="range" min="0.1" max="0.9" step="0.05" value="0.5">
+      </div>
+      <button class="primary" id="go" type="button">Check comment</button>
+    </div>
+    <div class="error" id="error" role="alert"></div>
+  </section>
+
+  <section class="card" id="result" aria-live="polite">
+    <span class="verdict" id="verdict"></span>
+    <div class="bar"><div class="fill" id="fill"></div><div class="mark" id="mark"></div></div>
+    <div class="scale"><span>0 · not hate</span><span>1 · hate</span></div>
+    <div class="nums">
+      <div><b id="pHate">–</b><span>probability of hate</span></div>
+      <div><b id="pNot">–</b><span>probability of not hate</span></div>
+      <div><b id="thrShown">–</b><span>threshold used</span></div>
+    </div>
+    <div class="cleaned">Text the model saw (after cleaning):<code id="cleaned"></code></div>
+    <div class="demo-note" id="demoNote" style="display:none">Demo mode: these scores are fake and only preview the interface. Start the server without DEMO_MODE to use the trained model.</div>
+  </section>
+
+  <section class="card">
+    <h2>Recent checks</h2>
+    <ul id="history"><li class="empty" style="cursor:default">Nothing yet.</li></ul>
+  </section>
+</div></main>
+
+<footer>Research prototype (about 0.66 macro-F1 on the dev set, so mistakes are common). Do not use it alone to judge or moderate people's comments.</footer>
+
+<script>
+const $ = id => document.getElementById(id);
+const text = $("text"), go = $("go"), thr = $("thr");
+const history = [];
+
+// ----- server status -----
+fetch("/api/health").then(r => r.json()).then(h => {
+  $("dot").classList.toggle("on", h.model_loaded);
+  $("statusText").textContent = h.demo ? "Demo mode" : h.model_loaded ? `Model ready · ${h.device}` : "Model loading…";
+}).catch(() => { $("statusText").textContent = "Server not reachable"; });
+
+// ----- small helpers -----
+text.addEventListener("input", () => $("count").textContent = text.value.length);
+thr.addEventListener("input", () => $("thrVal").textContent = (+thr.value).toFixed(2));
+document.querySelectorAll(".chip").forEach(c => c.addEventListener("click", () => { text.value = c.dataset.t; text.dispatchEvent(new Event("input")); text.focus(); }));
+text.addEventListener("keydown", e => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) check(); });
+go.addEventListener("click", check);
+
+function showError(msg){ const e = $("error"); e.textContent = msg; e.style.display = msg ? "block" : "none"; }
+
+async function check(){
+  const t = text.value.trim();
+  if (!t){ showError("Please type a comment first."); return; }
+  showError("");
+  go.disabled = true; go.textContent = "Checking…";
+  try{
+    const r = await fetch("/api/predict", {method:"POST", headers:{"Content-Type":"application/json"},
+                                           body: JSON.stringify({text: t, threshold: +thr.value})});
+    const data = await r.json();
+    if (!r.ok){
+      const d = data.detail;
+      throw new Error(typeof d === "string" ? d : Array.isArray(d) ? d.map(x => x.msg).join("; ") : "Request failed.");
+    }
+    render(data, t);
+  }catch(err){
+    showError(err.message === "Failed to fetch" ? "Cannot reach the server. Is uvicorn still running?" : err.message);
+  }finally{
+    go.disabled = false; go.textContent = "Check comment";
+  }
+}
+
+function render(d, original){
+  $("result").style.display = "block";
+  const v = $("verdict");
+  v.textContent = d.is_hate ? "HATE SPEECH" : "NOT HATE SPEECH";
+  v.className = "verdict " + (d.is_hate ? "hate" : "nothate");
+  $("fill").style.width = (d.p_hate * 100).toFixed(1) + "%";
+  $("mark").style.left = `calc(${d.threshold * 100}% - 1px)`;
+  $("pHate").textContent = (d.p_hate * 100).toFixed(1) + "%";
+  $("pNot").textContent = (d.p_not_hate * 100).toFixed(1) + "%";
+  $("thrShown").textContent = d.threshold.toFixed(2);
+  $("cleaned").textContent = d.cleaned_text;
+  $("demoNote").style.display = d.demo ? "block" : "none";
+  history.unshift({text: original, is_hate: d.is_hate, p: d.p_hate});
+  if (history.length > 8) history.pop();
+  drawHistory();
+}
+
+function drawHistory(){
+  const ul = $("history"); ul.textContent = "";
+  history.forEach(h => {
+    const li = document.createElement("li");
+    const tag = document.createElement("span"); tag.className = "tag " + (h.is_hate ? "hate" : "nothate"); tag.textContent = h.is_hate ? "HATE" : "NOT HATE";
+    const sn = document.createElement("span"); sn.className = "snip"; sn.textContent = h.text;
+    const pc = document.createElement("span"); pc.className = "pct"; pc.textContent = (h.p * 100).toFixed(0) + "%";
+    li.append(tag, sn, pc);
+    li.addEventListener("click", () => { text.value = h.text; text.dispatchEvent(new Event("input")); window.scrollTo({top:0, behavior:"smooth"}); });
+    ul.appendChild(li);
+  });
+}
+</script>
+</body>
+</html>

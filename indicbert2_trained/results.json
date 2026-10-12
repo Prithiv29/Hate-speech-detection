@@ -1,0 +1,16 @@
+{
+ "name": "indicbert2",
+ "model_id": "ai4bharat/IndicBERTv2-MLM-only",
+ "lr": 2e-05,
+ "epochs_run": 4,
+ "seed": 42,
+ "val_macro_F1": 0.623888787269069,
+ "dev_accuracy": 0.6863157894736842,
+ "dev_macro_P": 0.6620879120879121,
+ "dev_macro_R": 0.6840181990365216,
+ "dev_macro_F1": 0.6633753311549639,
+ "dev_hate_F1": 0.5754985754985755,
+ "predicts_both_classes": true,
+ "train_minutes": 3.7,
+ "peak_gpu_gb": 5.27
+}

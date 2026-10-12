@@ -1,0 +1,19 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# Virtual environment
+venv/
+.venv/
+
+# Secrets
+.env
+
+# Large model files
+indicbert2_trained/model_state.pt
+indicbert2_trained/logits.npz
+
+# Model checkpoints
+*.safetensors
+*.pth
+*.bin
